@@ -1,0 +1,6 @@
+lr: 0.01
+batch_size: 512
+shuffle: True
+train_img_pth: ./data/train
+test_img_pth: ./data/test
+device: 0
