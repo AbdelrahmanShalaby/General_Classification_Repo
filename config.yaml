@@ -1,6 +1,12 @@
-lr: 0.01
 batch_size: 512
-shuffle: True
-train_img_pth: ./data/train
-test_img_pth: ./data/test
+nc: 2
+img_channels: 3
+epochs: 50
+lr: 0.01
+image_size: 224
+train_csv: ./data/train.csv
+test_csv: ./data/test.csv
+imgs_path: ./data/images
+workers: 8
 device: 0
+shuffle: True
