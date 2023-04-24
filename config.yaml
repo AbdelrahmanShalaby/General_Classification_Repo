@@ -10,3 +10,4 @@ imgs_path: ./data/images
 workers: 8
 device: 0
 shuffle: True
+classes: ['Cat', 'Dog']
