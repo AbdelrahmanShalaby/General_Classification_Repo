@@ -14,6 +14,8 @@ from tqdm import tqdm
 from torchsummary import summary
 from PIL import Image
 from test import test
+from save_load_model import load_model, save_model
+import os
 
 def train(opt):
 
@@ -51,18 +53,29 @@ def train(opt):
     # loss function
     loss_fn = nn.CrossEntropyLoss()
 
-    # Optimizers
-    optimizer = torch.optim.Adam(model.parameters(), lr = opt.lr)
-
     # display model architecture
     print(model)
 
     # display model summary
     print(summary(model, (3, 224, 224)))
 
-    best_loss = 1
+    # Optimizers
+    optimizer = torch.optim.Adam(model.parameters(), lr = opt.lr)
+    if opt.resume and os.path.isfile(os.path.join(opt.save_model_path, 'last_weights.pt')):
+        model, optimizer, start_epoch, _ = load_model(model, os.path.join(opt.save_model_path, 'last_weights.pt'), optimizer, resume=opt.resume)
+        _, _, _, best_loss = load_model(model, os.path.join(opt.save_model_path, 'best_weights.pt'), optimizer, resume=opt.resume)
+        print("Model Loaded.....")
+    else:
+        start_epoch = 0
+        best_loss = 1
+        save_model(start_epoch, model, optimizer, model.state_dict(), best_loss,
+                   os.path.join(opt.save_model_path, 'init_weights.pt'))
 
-    for epoch in range(opt.epochs):
+
+
+
+
+    for epoch in range(start_epoch, opt.epochs):
 
         print("Epoch[{}/{}]:".format(epoch, opt.epochs-1))
         model.train()
@@ -87,7 +100,7 @@ def train(opt):
             # Update parameters
             optimizer.step()
 
-        best_loss = test(opt, val, model, loss_fn, best_loss)
+        best_loss = test(opt, val, model, loss_fn, best_loss, epoch, optimizer)
 
 
 
@@ -111,12 +124,13 @@ if __name__ == "__main__":
     parser.add_argument('--lr', type=float, default= 0.0001, help='value of learning rate during training')
     parser.add_argument('--img-size', type=int, default=224, help='[train, test] image sizes')
     parser.add_argument('--train-csv', type=str, default='', help='csv file contains image name and label for train')
-    parser.add_argument('--test-csv', type=str, default='', help='csv file contains image name and label for test')
+    # parser.add_argument('--test-csv', type=str, default='', help='csv file contains image name and label for test')
     parser.add_argument('--imgs-path', type=str, default='', help='folder path containing all training and testing images')
     parser.add_argument('--workers', type=int, default=2, help='maximum number of dataloader workers')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. cuda:0 or 0,1,2,3 or cpu')
     parser.add_argument('--shuffle', type=str, default='True', help='shuffle data')
     parser.add_argument('--save-model-path', type=str, default='./models', help='path to save model')
+    parser.add_argument('--resume', nargs='?', const=True, default=False, help='Resume training from last epoch')
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
 
 

@@ -2,8 +2,9 @@ from tqdm import tqdm
 from sklearn.metrics import classification_report
 import torch
 import os
+from save_load_model import save_model
 
-def test(opt, test, model, loss_fn, best_loss):
+def test(opt, test, model, loss_fn, best_loss, epoch, optimizer):
     predictions = []
     labels = []
     total_loss = 0.0
@@ -25,9 +26,12 @@ def test(opt, test, model, loss_fn, best_loss):
         print(classification_report(labels, predictions, target_names=target_names, zero_division=1))
 
         if total_loss / len(test) < best_loss:
-            torch.save(model.state_dict(), os.path.join(opt.save_model_path, 'best_weights.pt'))
+            save_model(epoch, model, optimizer, total_loss / len(test), os.path.join(opt.save_model_path, 'best_weights.pt'))
+            save_model(epoch, model, optimizer, total_loss / len(test), os.path.join(opt.save_model_path, 'last_weights.pt'))
             best_loss = total_loss / len(test)
             print("model_saved......")
+        else:
+            save_model(epoch, model, optimizer, total_loss / len(test), os.path.join(opt.save_model_path, 'last_weights.pt'))
 
         return best_loss
 

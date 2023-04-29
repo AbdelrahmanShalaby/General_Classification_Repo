@@ -31,7 +31,7 @@ class CNN(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.2),
             nn.Linear(in_features = 4096, out_features=out_channels),
-            nn.Softmax()
+            nn.Softmax(dim=1)
         )
 
     def _block(self, in_channels, out_channels, kernel_size, stride, padding):
