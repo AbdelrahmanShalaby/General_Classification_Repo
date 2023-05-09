@@ -9,6 +9,8 @@ from torch.utils.data import DataLoader
 from data.load_custom_dataset import CustomImageDataset
 import pandas as pd
 import argparse
+from albumentations.pytorch import ToTensorV2
+import albumentations as A
 
 
 def inference(opt):
@@ -25,10 +27,10 @@ def inference(opt):
     test_pred['id'] = test['image'].values
 
     # create transforms
-    transform = transforms.Compose([
-        transforms.Resize((opt.img_size, opt.img_size)),  # Resize the image to 224x224
-        transforms.ToTensor(),  # Convert the image to a tensor
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
+    transform = A.Compose([
+        A.Resize((opt.img_size, opt.img_size)),  # Resize the image to 224x224
+        ToTensorV2(),  # Convert the image to a tensor
+        A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
     ])
 
     # create custom dataset

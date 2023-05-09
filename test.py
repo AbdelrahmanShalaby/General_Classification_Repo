@@ -4,7 +4,8 @@ import torch
 import os
 from save_load_model import save_model
 
-def test(opt, test, model, loss_fn, best_loss, epoch, optimizer):
+
+def test(opt, test, model, loss_fn, best_loss, epoch, optimizer, scheduler):
     predictions = []
     labels = []
     total_loss = 0.0
@@ -24,16 +25,17 @@ def test(opt, test, model, loss_fn, best_loss, epoch, optimizer):
         res = [1 if g == r else 0 for g, r in zip(labels, predictions)]
         print("Accuracy: {}".format(sum(res) / len(predictions)))
         print(classification_report(labels, predictions, target_names=target_names, zero_division=1))
-
-        if total_loss / len(test) < best_loss:
-            save_model(epoch, model, optimizer, total_loss / len(test), os.path.join(opt.save_model_path, 'best_weights.pt'))
-            save_model(epoch, model, optimizer, total_loss / len(test), os.path.join(opt.save_model_path, 'last_weights.pt'))
-            best_loss = total_loss / len(test)
+        curr_loss = total_loss / len(test)
+        scheduler.step(total_loss / len(test))
+        if best_loss is None or curr_loss < best_loss:
+            save_model(epoch, model, optimizer, curr_loss, os.path.join(opt.save_model_path, 'best_weights.pt'))
+            save_model(epoch, model, optimizer, curr_loss, os.path.join(opt.save_model_path, 'last_weights.pt'))
+            best_loss = curr_loss
             print("model_saved......")
         else:
-            save_model(epoch, model, optimizer, total_loss / len(test), os.path.join(opt.save_model_path, 'last_weights.pt'))
+            save_model(epoch, model, optimizer, curr_loss, os.path.join(opt.save_model_path, 'last_weights.pt'))
 
-        return best_loss
+        return best_loss, curr_loss
 
 
 
