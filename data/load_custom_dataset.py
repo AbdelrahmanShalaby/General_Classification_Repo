@@ -6,6 +6,7 @@ import os
 import pandas as pd
 from torch.utils.data import Dataset
 from PIL import Image
+import numpy as np
 
 
 class CustomImageDataset(Dataset):
@@ -30,8 +31,9 @@ class CustomImageDataset(Dataset):
 
     def __getitem__(self, idx:int)->tuple:
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
-        image = Image.open(img_path)
 
+        image = Image.open(img_path)
+        # print(type(image))
         if self.transform:
             image = self.transform(image)
         if self.train:

@@ -16,11 +16,13 @@ class EarlyStopping:
         if self.best_score is None:
             self.best_score = score
 
-        elif score < self.best_score:
+        elif score > self.best_score:
             self.counter += 1
-            self.early_stopping = True
+            if self.counter == self.patience:
+              self.early_stopping = True
 
         else:
             self.best_score = score
             self.counter = 0
+
 
