@@ -1,0 +1,13 @@
+batch_size: 256
+nc: 2
+img_channels: 3
+epochs: 50
+lr: 0.01
+image_size: 224
+train_csv: ./data/train.csv # csv file with columns ('image': str for image name, 'label': int)
+test_csv: ./data/test.csv
+imgs_path: ./data/images # folder contains all images
+workers: 4
+device: 0
+shuffle: True
+classes: ['Cat', 'Dog']
