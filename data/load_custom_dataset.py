@@ -33,7 +33,7 @@ class CustomImageDataset(Dataset):
         img_path = os.path.join(self.img_dir, self.img_labels.iloc[idx, 0])
 
         image = Image.open(img_path)
-        # print(type(image))
+
         if self.transform:
             image = self.transform(image)
         if self.train:

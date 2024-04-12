@@ -25,13 +25,14 @@ class CNN(nn.Module):
             self._block(in_channels = filter*16, out_channels = filter*32, kernel_size = (2,2), stride = (1,1), padding = 1),
             nn.Flatten(),
             nn.Linear(in_features = 4*4*1024 , out_features = 4096),
+            nn.BatchNorm1d(4096),
             nn.ReLU(),
             nn.Dropout(0.2),
             nn.Linear(in_features = 4096, out_features = 4096),
+            nn.BatchNorm1d(4096),
             nn.ReLU(),
             nn.Dropout(0.2),
-            nn.Linear(in_features = 4096, out_features=out_channels),
-            nn.Softmax(dim=1)
+            nn.Linear(in_features = 4096, out_features=out_channels)
         )
 
     def _block(self, in_channels, out_channels, kernel_size, stride, padding):
@@ -44,6 +45,7 @@ class CNN(nn.Module):
                 padding,
                 bias=False,
             ),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
 

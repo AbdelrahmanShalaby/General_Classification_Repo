@@ -19,11 +19,15 @@ from save_load_model import load_model, save_model
 import os
 import albumentations as A
 from early_stopping import EarlyStopping
+from data.utilities import LoadConfig
 
 
 def train(opt):
+    if opt.cfg:
+        opt = LoadConfig(opt)
+
     # read csv file
-    df = pd.read_csv(opt.train_csv)
+    df = pd.read_csv(opt.train_csv, index_col=False)
 
     # shuffle dataframe
     df = shuffle(df)
@@ -34,21 +38,12 @@ def train(opt):
     # take remaining data 80% for training
     train = df[~(df.isin(val)['image'].values)]
 
-    # create transforms
-    # transform = A.Compose([
-    #     A.Resize(opt.img_size, opt.img_size),  # Resize the image to 224x224
-    #     A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.05, rotate_limit=15, p=0.5),
-    #     A.RGBShift(r_shift_limit=15, g_shift_limit=15, b_shift_limit=15, p=0.5),
-    #     A.RandomBrightnessContrast(p=0.5),
-    #     A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),  # Normalize the image
-    #     A.Transpose(),  # Convert the image to a tensor
-
-    # ])
     transform = transforms.Compose([
         transforms.Resize((opt.img_size, opt.img_size)),  # Resize the image to 224x224
         transforms.ToTensor(),  # Convert the image to a tensor
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize the image
     ])
+
     # create custom dataset
     train = CustomImageDataset(df=train, img_dir=opt.imgs_path, transform=transform)
     val = CustomImageDataset(df=val, img_dir=opt.imgs_path, transform=transform)
@@ -67,13 +62,13 @@ def train(opt):
     print(model)
 
     # display model summary
-    # print(summary(model, (3, 224, 224)))
+    print(summary(model, (3, 224, 224)))
 
     # Optimizers
     optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr)
 
     # schedul learning rate
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=5, verbose=True)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.1, patience=5)
 
     early_stopping = EarlyStopping(patience=opt.patience)
 
@@ -94,10 +89,10 @@ def train(opt):
 
         print("Epoch[{}/{}]:".format(epoch, opt.epochs - 1))
         model.train()
+
         for x, y in tqdm(train, total=len(train)):
             x = x.to(device=opt.device)
             y = y.to(device=opt.device)
-            # y = (torch.nn.functional.one_hot(y, opt.nc).float()).to(device=opt.device)
 
             # Clear gradients
             optimizer.zero_grad()
@@ -133,7 +128,7 @@ if __name__ == "__main__":
     parser.add_argument('--img-size', type=int, default=224, help='[train, test] image sizes')
     parser.add_argument('--train-csv', type=str, default='', help='csv file contains image name and label for train')
     # parser.add_argument('--test-csv', type=str, default='', help='csv file contains image name and label for test')
-    parser.add_argument('--imgs-path', type=str, default='',
+    parser.add_argument('--imgs_path', type=str, default='',
                         help='folder path containing all training and testing images')
     parser.add_argument('--workers', type=int, default=2, help='maximum number of dataloader workers')
     parser.add_argument('--device', default='cpu', help='cuda device, i.e. cuda:0 or 0,1,2,3 or cpu')

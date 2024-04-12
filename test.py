@@ -15,8 +15,6 @@ def test(opt, test, model, loss_fn, best_loss, epoch, optimizer, scheduler):
             x = x.to(device=opt.device)
             labels += (list(y.to('cpu').numpy()))
             y = y.to(device=opt.device)
-            # y = (torch.nn.functional.one_hot(y, opt.nc).float()).to(device=opt.device)
-
             prediction = model(x)
             target_names = ['Cat', 'Dog']
             total_loss += loss_fn(prediction, y).item()
